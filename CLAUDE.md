@@ -70,6 +70,25 @@ One-sentence summary of what this page covers.
 
 ---
 
+## Source Ownership
+
+The `Editable` field on SA entries controls whether a gap between the wiki and a source document is actionable or informational only. Set this once here — the LLM uses it automatically when creating SA entries. **Do not ask the user per-entry.**
+
+**Default**: all sources are `Editable: Yes` (you own them and can apply changes).
+
+**Read-only sources** (set to `Editable: No`):
+> List any sources you do not own or cannot edit. The LLM will mark SA entries for these as `No`.
+
+```
+# Example:
+# - `Vendor API Reference.md` — third-party docs
+# - `Platform Team Design Doc.md` — owned by another team
+```
+
+If all your sources are team-owned, leave this section empty. The default (`Yes`) applies to everything.
+
+---
+
 ## Key Entities (seed list — fill in for your domain)
 
 > Replace these with the key named systems, services, teams, and products in your topic area.
@@ -174,7 +193,7 @@ When the user says "ingest [filename]":
    - **Source Quote** — exact text from the raw file that needs changing, or `[missing — content does not exist in source]` for additions
    - **Desired Change** — what the source document should say
    - **Source File** — the raw filename
-   - **Editable** — Yes if you own the source; No if it is read-only
+   - **Editable** — check the **Source Ownership** section of this file; default is `Yes`
    - **Ingested** — today's date
    - Only create an entry if there is a genuine gap.
 6. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.
