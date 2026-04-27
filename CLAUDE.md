@@ -70,21 +70,6 @@ One-sentence summary of what this page covers.
 
 ---
 
-## Source Ownership
-
-Tracks which raw sources are editable (you can update the source) vs read-only (you cannot). The LLM uses this to decide whether to create SA entries for a source.
-
-- **Editable** → LLM creates SA entries (action items to update the source)
-- **Read-only** → LLM skips SA entries; notes gaps inline on wiki pages with `> ⚠️ Note: source does not reflect this...`
-
-**At first ingest of any source**, the LLM asks: "Can you edit this source?" — once, not per entry. After you answer, the LLM records it here so re-ingests never ask again.
-
-| Source File | Editable |
-|-------------|----------|
-| *(populated automatically at first ingest of each source)* | |
-
----
-
 ## Key Entities (seed list — fill in for your domain)
 
 > Replace these with the key named systems, services, teams, and products in your topic area.
@@ -112,7 +97,6 @@ These rules apply to **every** wiki change, regardless of what triggered it:
 > 🚨 **BEFORE EVERY COMMIT** — run this mental checklist:
 > - Did I add a CHG entry to `changelog.md` for every wiki file I touched? (one CHG per file per session of changes)
 > - Did I evaluate whether any change needs an SA entry in `source-actions.md`?
-> - If the changed page is in an external-facing section of `index.md`, did I create an SA entry and mark it `**Editable:** Yes`?
 > - Did I update `log.md` if this was an ingest, reingest, audit, or doctor operation?
 > - If I renamed a wiki page or reorganized `index.md` sections, did I update `README.md`?
 >
@@ -125,7 +109,6 @@ These rules apply to **every** wiki change, regardless of what triggered it:
    - New sections added to the wiki that should be reflected in the source
    - Content synthesized across multiple sources that clarifies or contradicts any single source
    - If the raw source already has the content correctly → no SA entry needed
-   - Mark `**Editable:** Yes` if you own the source and can apply the change; `No` if the source is read-only
 
 3. **`log.md` must be updated** after every operation (ingest, reingest, audit, doctor) with a timestamped entry.
 
@@ -182,16 +165,13 @@ List all available commands with a one-line description of each.
 When the user says "ingest [filename]":
 
 1. **Read** the source file from `raw/`.
-2. **Check Source Ownership table** in this file. If the source is already listed → use the recorded value and proceed. If not listed → ask the user: "Can you edit this source? (yes/no)". Record the answer in the Source Ownership table before continuing.
-3. **Discuss** key takeaways with the user — what's new, what's important, what's surprising.
-4. **Write a summary page** in the appropriate `wiki/` subfolder. Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Core Architecture.md` — NOT `wiki/concepts/core-architecture.md`).
-5. **Update existing wiki pages** — any entities, concepts, or integrations touched by this source should be updated or created.
-6. **Handle gaps** based on the Source Ownership table:
-   - **Editable** → append SA entries to `source-actions.md` for each genuine gap (content in wiki not yet in source)
-   - **Read-only** → note gaps inline on the relevant wiki page with `> ⚠️ Note: source does not reflect this — [brief description]`. Do not create SA entries.
-7. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.
-8. **Append to `changelog.md`** — add CHG entries under today's date header.
-9. **Append to `log.md`** — one entry: `## [YYYY-MM-DD] ingest | <Source Title>` + 2–3 line summary.
+2. **Discuss** key takeaways with the user — what's new, what's important, what's surprising.
+3. **Write a summary page** in the appropriate `wiki/` subfolder. Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Core Architecture.md` — NOT `wiki/concepts/core-architecture.md`).
+4. **Update existing wiki pages** — any entities, concepts, or integrations touched by this source should be updated or created.
+5. **Populate `source-actions.md`** — for each wiki correction or addition, check whether the raw source already contains the corrected content. If not, append an SA entry. Only create an entry if there is a genuine gap.
+6. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.
+7. **Append to `changelog.md`** — add CHG entries under today's date header.
+8. **Append to `log.md`** — one entry: `## [YYYY-MM-DD] ingest | <Source Title>` + 2–3 line summary.
 
 ### Re-ingest an Updated Source
 

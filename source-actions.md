@@ -2,7 +2,7 @@
 
 Tracks gaps between the wiki and the source documents — content the wiki has synthesized or corrected that the original source does not yet reflect.
 
-SA entries are only created when sources are editable (see **Source Ownership** in `CLAUDE.md`). If sources are read-only, gaps are noted inline on wiki pages instead of here.
+SA entries track every gap regardless of whether you own the source. What you do with them is up to you — fix it yourself, submit a PR, notify the author, or leave it as documented debt.
 
 ---
 
