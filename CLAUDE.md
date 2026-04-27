@@ -72,20 +72,13 @@ One-sentence summary of what this page covers.
 
 ## Source Ownership
 
-The `Editable` field on SA entries controls whether a gap between the wiki and a source document is actionable or informational only. Set this once here — the LLM uses it automatically when creating SA entries. **Do not ask the user per-entry.**
+**Sources editable:** Yes
 
-**Default**: all sources are `Editable: Yes` (you own them and can apply changes).
-
-**Read-only sources** (set to `Editable: No`):
-> List any sources you do not own or cannot edit. The LLM will mark SA entries for these as `No`.
-
-```
-# Example:
-# - `Vendor API Reference.md` — third-party docs
-# - `Platform Team Design Doc.md` — owned by another team
-```
-
-If all your sources are team-owned, leave this section empty. The default (`Yes`) applies to everything.
+> Set to `Yes` if your team owns the source documents and can apply changes to them.
+> Set to `No` if sources are read-only (third-party docs, another team's pages, external references).
+>
+> - `Yes` → the LLM creates SA entries as action items to update the source
+> - `No` → the LLM skips SA entries; gaps are noted inline on wiki pages with `> ⚠️ Note: source does not reflect this...` instead
 
 ---
 
@@ -193,7 +186,6 @@ When the user says "ingest [filename]":
    - **Source Quote** — exact text from the raw file that needs changing, or `[missing — content does not exist in source]` for additions
    - **Desired Change** — what the source document should say
    - **Source File** — the raw filename
-   - **Editable** — check the **Source Ownership** section of this file; default is `Yes`
    - **Ingested** — today's date
    - Only create an entry if there is a genuine gap.
 6. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.
@@ -352,7 +344,6 @@ When the user says "doctor":
 
 **Type:** `content-correction` | `content-addition` | `terminology` | `structural`
 **Source File:** `raw/filename.md` | N/A
-**Editable:** Yes / No
 **Ingested:** YYYY-MM-DD
 
 **Source Quote:**
@@ -366,7 +357,7 @@ What the source document should ideally say. Be specific.
 **Status:** [✅ Resolved YYYY-MM-DD | 🔲 Unresolved]
 ```
 
-**`Editable` field**: `Yes` if you own this source and can apply the change directly. `No` if the source is read-only, owned by another team, or external. `No` entries are still valuable — they document known gaps and inform how you present information in the wiki.
+> SA entries are only created when **Sources editable: Yes** in the Source Ownership section. When sources are read-only, gaps are noted inline on wiki pages instead.
 
 ---
 

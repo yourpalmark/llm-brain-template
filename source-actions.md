@@ -1,11 +1,8 @@
 # [TOPIC] Brain — Source Actions
 
-Tracks gaps between the wiki and the source documents. When the wiki contains information that the raw sources do not yet reflect, an SA entry is created here.
+Tracks gaps between the wiki and the source documents — content the wiki has synthesized or corrected that the original source does not yet reflect.
 
-**Editable: Yes** — you own this source; apply the change when convenient.
-**Editable: No** — source is read-only or owned by another team; entry documents the gap for awareness only.
-
-Neither type blocks wiki quality. The wiki is always the authoritative layer. SA entries exist so improvements can flow back to the sources when possible.
+SA entries are only created when sources are editable (see **Source Ownership** in `CLAUDE.md`). If sources are read-only, gaps are noted inline on wiki pages instead of here.
 
 ---
 
@@ -17,7 +14,6 @@ Format:
 
 **Type:** `content-correction` | `content-addition` | `terminology` | `structural`
 **Source File:** `raw/filename.md` | N/A
-**Editable:** Yes / No
 **Ingested:** YYYY-MM-DD
 
 **Source Quote:**
