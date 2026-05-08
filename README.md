@@ -76,6 +76,8 @@ Get your source documents into `raw/` as markdown files, then run `ingest`.
 
 **[Asset Swapper](https://github.com/yourpalmark/asset-swapper)** — Obsidian plugin that replaces broken asset links in clipped markdown files with the locally downloaded assets.
 
+> **Large assets**: This repo includes a `.gitattributes` that tracks images and PDFs in `raw/assets/` via [Git LFS](https://git-lfs.com) when available. If your remote supports LFS, run `git lfs install` once after cloning. If not, files commit normally as blobs — no breakage either way.
+
 ---
 
 ## Key Files
