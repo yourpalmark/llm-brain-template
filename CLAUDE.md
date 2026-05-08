@@ -2,15 +2,15 @@
 
 This is the configuration file for the [TOPIC] second brain. It tells you (the LLM) exactly how this wiki is structured, what the conventions are, and what workflows to follow. Read this at the start of every session.
 
-> **Setup note:** Replace every `[TOPIC]` placeholder in this file with your actual topic (e.g., "WCNP", "Kafka Platform", "Design System"). Replace `[SOURCE TYPE]` with your primary source type (e.g., "Confluence", "GitHub", "internal docs").
+> **Setup note:** Use the setup prompt from the llm-brain-template README to initialize this file for your topic.
 
 ---
 
 ## Domain
 
-**Topic**: [TOPIC] — brief description of what this brain covers.
+**Topic**: [TOPIC]
 
-**Purpose of this wiki**: Build and maintain a comprehensive, interlinked knowledge base about [TOPIC] — its architecture, concepts, use cases, and operational patterns. The wiki is the compiled, synthesized, always-current artifact. Raw sources are the source of truth but are never modified.
+**Purpose of this wiki**: Build and maintain a comprehensive, interlinked knowledge base about [TOPIC]. The wiki is the compiled, synthesized, always-current artifact. Raw sources are the source of truth but are never modified.
 
 ---
 
@@ -70,23 +70,15 @@ One-sentence summary of what this page covers.
 
 ---
 
-## Key Entities (seed list — fill in for your domain)
+## Key Entities (expand as you learn more)
 
-> Replace these with the key named systems, services, teams, and products in your topic area.
-
-- **[Entity 1]** — brief description
-- **[Entity 2]** — brief description
-- **[Entity 3]** — brief description
+<!-- Populated during ingest. Add named systems, services, teams, and products as they are encountered. -->
 
 ---
 
-## Key Concepts (seed list — fill in for your domain)
+## Key Concepts (expand as you learn more)
 
-> Replace these with the core concepts, mechanics, and terms in your topic area.
-
-- **[Concept 1]** — brief description
-- **[Concept 2]** — brief description
-- **[Concept 3]** — brief description
+<!-- Populated during ingest. Add core concepts, mechanics, and terms as they are encountered. -->
 
 ---
 
@@ -166,12 +158,14 @@ When the user says "ingest [filename]":
 
 1. **Read** the source file from `raw/`.
 2. **Discuss** key takeaways with the user — what's new, what's important, what's surprising.
-3. **Write a summary page** in the appropriate `wiki/` subfolder. Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Core Architecture.md` — NOT `wiki/concepts/core-architecture.md`).
+3. **Write a summary page** in the appropriate `wiki/` subfolder. Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Overview.md` — NOT `wiki/concepts/overview.md`).
 4. **Update existing wiki pages** — any entities, concepts, or integrations touched by this source should be updated or created.
 5. **Populate `source-actions.md`** — for each wiki correction or addition, check whether the raw source already contains the corrected content. If not, append an SA entry. Only create an entry if there is a genuine gap.
 6. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.
 7. **Append to `changelog.md`** — add CHG entries under today's date header.
 8. **Append to `log.md`** — one entry: `## [YYYY-MM-DD] ingest | <Source Title>` + 2–3 line summary.
+
+A single source may touch 5–15 wiki pages. That's expected and correct.
 
 ### Re-ingest an Updated Source
 
@@ -236,7 +230,7 @@ When the user asks a question:
 
 1. **Read `index.md`** to find relevant pages.
 2. **Read relevant wiki pages** (not raw sources — the wiki is the compiled knowledge).
-3. **Synthesize an answer** with citations to wiki pages.
+3. **Synthesize an answer** with citations to wiki pages. Deliver in the format most useful for the question — prose, comparison table, step-by-step list, etc.
 4. **Offer to file the answer** as a new `wiki/synthesis/` page if it's meaningful analysis worth keeping.
 
 ### Lint the Wiki
@@ -264,7 +258,7 @@ When the user says "doctor":
    - Orphan pages (no inbound links)
    - Concepts mentioned but lacking their own page
    - Missing cross-references between related pages
-   - Data gaps that could be filled with existing raw sources not yet ingested
+   - Data gaps that could be filled with existing raw sources not yet ingested, or via web search
 
 4. Check all `🔲 Unresolved` entries in `source-actions.md` against their local raw source files — validate whether the Source Quote still exists verbatim. Mark `✅ Resolved [YYYY-MM-DD]` for any entries whose quote is gone or whose desired change is already present.
 
@@ -278,7 +272,7 @@ When the user says "doctor":
 
 **index.md** — organized by category. Each entry: `- [[Page Title]] — one-line summary`. Updated on every ingest.
 
-**log.md** — append-only. Each entry header: `## [YYYY-MM-DD] operation | Description`. Operation types: `ingest`, `reingest`, `query`, `audit`, `doctor`. New entries go at the **top** (reverse chronological).
+**log.md** — append-only. Each entry header: `## [YYYY-MM-DD] operation | Description`. Operation types: `ingest`, `reingest`, `query`, `audit`, `doctor`. New entries go at the **top** (reverse chronological). Parseable with: `grep "^## \[" log.md | head -5`
 
 **changelog.md** — wiki change history. CHG entries grouped under date headers (`## YYYY-MM-DD`), reverse chronological. CHG numbers are sequential.
 
@@ -359,7 +353,7 @@ What the source document should ideally say. Be specific.
 ## Style Notes
 
 - Write wiki pages for someone who knows the broader domain but may be new to this specific topic.
-- Be concrete: include config snippets, API names, field names, state names when known.
+- Be concrete: include specific names, values, steps, and examples when known.
 - Flag uncertainty: if a source is ambiguous or outdated, note it with `> ⚠️ Note: ...`.
 - When multiple sources contradict, note the contradiction explicitly on the relevant page rather than silently picking one.
 - **Do not use em dashes (`—`).** Use a regular hyphen with spaces (` - `) instead, or restructure the sentence.
