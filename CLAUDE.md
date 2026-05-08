@@ -282,7 +282,7 @@ When the user says "doctor":
 
 **changelog.md** — wiki change history. CHG entries grouped under date headers (`## YYYY-MM-DD`), reverse chronological. CHG numbers are sequential.
 
-**source-actions.md** — source update tracker. SA entries (SA-NNN) each contain a Source Quote anchored to the raw file at ingest time, and a Desired Change describing what the source should ideally say. Entries marked `Editable: Yes` are actionable if you own the source; `Editable: No` entries document known gaps for awareness.
+**source-actions.md** — source update tracker. SA entries (SA-NNN) each contain a Source Quote anchored to the raw file at ingest time, and a Desired Change describing what the source should ideally say. SA entries track every gap regardless of whether you own the source — what you do with them is up to you.
 
 ### Automatic Archiving (file length management)
 
@@ -338,7 +338,6 @@ What the source document should ideally say. Be specific.
 **Status:** [✅ Resolved YYYY-MM-DD | 🔲 Unresolved]
 ```
 
-> SA entries are only created when **Sources editable: Yes** in the Source Ownership section. When sources are read-only, gaps are noted inline on wiki pages instead.
 
 ---
 
