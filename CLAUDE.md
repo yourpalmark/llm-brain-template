@@ -224,7 +224,7 @@ When the user says "audit":
 When the user says "init":
 
 1. Check if any one-time setup is needed for this project (e.g., git submodule initialization if the project uses one). If none → report "Already initialized. Nothing to do."
-2. Verify the `wiki/` subdirectories exist. Create any that are missing.
+2. Verify the `wiki/` directory exists. Create it if missing.
 3. Confirm `raw/` exists and is ready to receive source files.
 4. Remind the user to open this repo as an Obsidian vault for wiki browsing, and that they can type `help` to see all available commands.
 

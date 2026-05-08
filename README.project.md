@@ -40,15 +40,21 @@ cd [topic]-brain
 claude         # Claude Code
 ```
 
-### 4. Initialize (first checkout only)
+### 4. Next steps
 
-Once inside the AI session, run:
+**If you are cloning an already-populated brain** — run `init` inside the AI session to complete first-checkout setup (e.g. initializing submodules):
 
 ```
 init
 ```
 
-`init` verifies setup and confirms the wiki directories are in place. It is idempotent — safe to run again.
+**If you are building this brain from scratch** — skip `init` and start ingesting. Drop source documents into `raw/` and run `ingest` for each one:
+
+```
+ingest [filename]
+```
+
+The LLM builds out the wiki incrementally — creating pages, adding cross-references, and tracking source gaps. See [How It Was Built](#how-it-was-built) for tools to capture source documents as markdown files.
 
 ---
 
