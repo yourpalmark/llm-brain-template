@@ -361,3 +361,25 @@ What the source document should ideally say. Be specific.
 - Flag uncertainty: if a source is ambiguous or outdated, note it with `> ⚠️ Note: ...`.
 - When multiple sources contradict, note the contradiction explicitly on the relevant page rather than silently picking one.
 - **Do not use em dashes (`—`).** Use a regular hyphen with spaces (` - `) instead, or restructure the sentence.
+
+---
+
+## AI Review Checkpoints
+
+For LLM assistants that support a reviewer or advisor tool:
+
+### When to call the reviewer
+
+1. **Before writing** — after reading all raw sources for a batch, but before creating or editing any wiki pages. The reviewer catches content placement errors (wrong target page), structural issues, and blind spots that are invisible mid-execution.
+
+2. **After committing** — once the commit is durable, call the reviewer to catch anything missed (numbering gaps, broken WikiLinks not yet verified, pages that should have been updated but weren't).
+
+3. **When stuck** — if a source is ambiguous about where content belongs, or two pages seem like valid targets, ask the reviewer before proceeding.
+
+### What to ask
+
+You do not need to pass parameters — the reviewer sees the full conversation. Just call it. Expect a short enumerated response (~100 words) with specific corrections.
+
+### Exemptions
+
+Single-file reactive fixes (e.g. fixing a broken WikiLink found during `doctor`, resolving one SA entry) do not require a reviewer call.
