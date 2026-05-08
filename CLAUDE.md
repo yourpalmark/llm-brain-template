@@ -28,13 +28,7 @@ This is the configuration file for the [TOPIC] second brain. It tells you (the L
 ├── archive/              ← overflow archives (LLM-maintained; auto-created)
 ├── raw/                  ← immutable source documents (never edit)
 └── wiki/                 ← LLM-generated knowledge base
-    ├── concepts/         ← core concepts, mechanics, data models
-    ├── entities/         ← named systems, services, teams, products
-    ├── integrations/     ← integration-specific pages
-    ├── use-cases/        ← concrete use cases and scenario walkthroughs
-    ├── operations/       ← guides, runbooks, how-tos
-    ├── roadmap/          ← plans, milestones, workstreams
-    └── synthesis/        ← cross-cutting analysis and comparisons
+    └── (subfolders created organically during ingest, based on topic domain)
 ```
 
 ---
@@ -45,7 +39,7 @@ Every wiki page should follow this structure:
 
 ```markdown
 ---
-tags: [concept|entity|integration|use-case|operation|roadmap|synthesis]
+tags: [one or more descriptive tags for this page, e.g. concept, entity, overview, synthesis, operation, use-case]
 sources: [list of raw filenames that informed this page]
 updated: YYYY-MM-DD
 ---
@@ -158,7 +152,17 @@ When the user says "ingest [filename]":
 
 1. **Read** the source file from `raw/`.
 2. **Discuss** key takeaways with the user — what's new, what's important, what's surprising.
-3. **Write a summary page** in the appropriate `wiki/` subfolder. Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Overview.md` — NOT `wiki/concepts/overview.md`).
+3. **Write a summary page** in the appropriate `wiki/` subfolder. Choose or create a subfolder that fits the content (e.g., `wiki/concepts/`, `wiki/entities/`, `wiki/operations/`, `wiki/synthesis/` — or any name that fits the domain). Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Overview.md` — NOT `wiki/concepts/overview.md`).
+
+   **Content types to recognize** (from Karpathy's methodology):
+   - **Entity pages** — named things: people, systems, teams, products, services
+   - **Concept pages** — ideas, mechanics, patterns, terminology
+   - **Summaries** — digested overview of a single source
+   - **Comparisons** — side-by-side analysis of two or more things
+   - **Overviews** — high-level orientation for a topic area
+   - **Synthesis pages** — cross-cutting analysis connecting multiple sources
+
+   Use these types to guide what pages to create and where to put them. Subfolder names are yours to define — the above are examples, not requirements.
 4. **Update existing wiki pages** — any entities, concepts, or integrations touched by this source should be updated or created.
 5. **Populate `source-actions.md`** — for each wiki correction or addition, check whether the raw source already contains the corrected content. If not, append an SA entry. Only create an entry if there is a genuine gap.
 6. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.

@@ -152,13 +152,7 @@ The brain is maintained through Claude Code. Open the repo in your editor, launc
 ├── archive/               ← overflow archives (LLM-maintained; auto-created)
 ├── raw/                   ← immutable source documents (never edit)
 └── wiki/                  ← LLM-generated knowledge base
-    ├── concepts/          ← core concepts, mechanics, data models
-    ├── entities/          ← named systems, services, teams, products
-    ├── integrations/      ← integration-specific pages
-    ├── use-cases/         ← concrete use cases and scenario walkthroughs
-    ├── operations/        ← guides, runbooks, how-tos
-    ├── roadmap/           ← plans, milestones, workstreams
-    └── synthesis/         ← cross-cutting analysis and comparisons
+    └── (subfolders created organically during ingest, based on topic domain)
 ```
 
 ---
