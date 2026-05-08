@@ -27,37 +27,30 @@ git init
 # Click "Use this template" on GitHub
 ```
 
-### 2. Replace the READMEs
+### 2. Customize for your domain
 
-```bash
-rm README.md
-mv README.project.md README.md
+Open the repo in an AI session and run the following setup prompt (replace `[TOPIC]` in the first line with your topic name — this is the only thing you need to fill in):
+
+```
+My topic is: [TOPIC]
+
+I want to set up an LLM brain for this topic. Please:
+1. Replace every instance of [TOPIC] in CLAUDE.md and README.project.md with the actual topic name.
+2. Delete README.md and rename README.project.md to README.md.
+3. Confirm when done and remind me to drop source files into raw/ before running ingest.
 ```
 
-### 3. Customize for your domain
-
-Open `CLAUDE.md` and fill in:
-- `[TOPIC]` — your topic name throughout the file
-- **Key Entities** — named systems, services, teams relevant to your domain
-- **Key Concepts** — core terms and mechanics
-
-Open `README.md` (formerly `README.project.md`) and replace `[TOPIC]` throughout.
-
-### 4. Gather source documents
+### 3. Gather source documents
 
 Drop your source documents into `raw/` as markdown files. See [Getting Data In](#getting-data-in) below.
 
-### 5. Open as an Obsidian vault
+### 4. Open as an Obsidian vault
 
 Install [Obsidian](https://obsidian.md) (free) and open the repo folder as a vault. This renders the `[[WikiLink]]` cross-references as a navigable graph.
 
-### 6. Launch an AI session and start ingesting
+### 5. Start ingesting
 
-```bash
-claude         # Claude Code
-```
-
-Then run `ingest [filename]` for each source. The LLM builds out the wiki incrementally.
+In the AI session run `ingest [filename]` for each source. The LLM builds out the wiki incrementally.
 
 ---
 
@@ -79,8 +72,8 @@ Get your source documents into `raw/` as markdown files, then run `ingest`.
 
 | File | Purpose |
 |------|---------|
-| `CLAUDE.md` | LLM schema — fill in `[TOPIC]`, Key Entities, and Key Concepts for your domain. Everything else works as-is. |
-| `README.project.md` | Your project's README template — rename to `README.md` after setup and fill in `[TOPIC]`. |
+| `CLAUDE.md` | LLM schema — the setup prompt fills in `[TOPIC]` automatically. |
+| `README.project.md` | Your project's README — the setup prompt renames this to `README.md` and fills in `[TOPIC]`. |
 | `index.md` | Content catalog (LLM-maintained). |
 | `source-actions.md` | Tracks gaps between the wiki and source documents (LLM-maintained). |
 | `changelog.md` | Append-only wiki change history (LLM-maintained). |
@@ -93,9 +86,9 @@ Get your source documents into `raw/` as markdown files, then run `ingest`.
 
 ```
 llm-brain-template/
-├── README.md              ← this file (template docs — replace after setup)
-├── README.project.md      ← your project's README (rename to README.md after setup)
-├── CLAUDE.md              ← LLM schema (customize for your domain)
+├── README.md              ← this file (template docs — replaced during setup)
+├── README.project.md      ← your project's README (renamed to README.md during setup)
+├── CLAUDE.md              ← LLM schema (customized for your domain during setup)
 ├── index.md               ← content catalog template
 ├── log.md                 ← activity log template
 ├── changelog.md           ← wiki changelog template
@@ -105,13 +98,7 @@ llm-brain-template/
 ├── raw/                   ← drop your source documents here
 ├── archive/               ← overflow archives (auto-managed by LLM)
 └── wiki/                  ← LLM-generated knowledge base
-    ├── concepts/
-    ├── entities/
-    ├── integrations/
-    ├── use-cases/
-    ├── operations/
-    ├── roadmap/
-    └── synthesis/
+    └── (subfolders created organically during ingest, based on topic domain)
 ```
 
 ---
