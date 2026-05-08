@@ -280,7 +280,7 @@ When the user says "doctor":
 
 **changelog.md** — wiki change history. CHG entries grouped under date headers (`## YYYY-MM-DD`), reverse chronological. CHG numbers are sequential.
 
-**source-actions.md** — source update tracker. SA entries (SA-NNN) each contain a Source Quote anchored to the raw file at ingest time, and a Desired Change describing what the source should ideally say. SA entries track every gap regardless of whether you own the source — what you do with them is up to you.
+**source-actions.md** — source update tracker. SA entries (SA-NNN) each contain a Source Quote anchored to the raw file at ingest time, and a Desired Change describing what the source should ideally say. SA entries track every gap regardless of whether you own the source — what you do with them is up to you. New entries go at the **top** (reverse chronological).
 
 ### Automatic Archiving (file length management)
 
