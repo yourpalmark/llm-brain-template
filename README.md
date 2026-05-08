@@ -37,7 +37,17 @@ My topic is: [TOPIC]
 I want to set up an LLM brain for this topic. Please:
 1. Replace every instance of [TOPIC] in CLAUDE.md and README.project.md with the actual topic name.
 2. Delete README.md and rename README.project.md to README.md.
-3. Confirm when done and tell me: open the repo as an Obsidian vault first, then use Obsidian Web Clipper to save source pages directly into raw/, and run `ingest [filename]` for each one to start building the wiki. Let me know that the new README.md has full details under Setup and Getting Data In if I need a reference.
+3. When steps 1 and 2 are complete, confirm and then give the user the following next steps exactly as written:
+
+   ---
+   **Your brain is ready. Here's what to do next:**
+
+   1. Open this repo as an Obsidian vault (File → Open folder as vault in Obsidian)
+   2. Use Obsidian Web Clipper to save source pages directly into `raw/`
+   3. Run `ingest [filename]` in this AI session for each source to start building the wiki
+
+   The new `README.md` has full details under **Setup** and **Getting Data In** if you need a reference.
+   ---
 ```
 
 ### 3. Gather source documents
