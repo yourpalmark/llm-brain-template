@@ -1,6 +1,6 @@
 # [TOPIC] Brain
 
-A second brain for [TOPIC] — a synthesized, LLM-maintained knowledge base covering its architecture, concepts, use cases, and operational patterns.
+A second brain for [TOPIC] — a synthesized, LLM-maintained knowledge base.
 
 ---
 
