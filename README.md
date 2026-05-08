@@ -106,6 +106,7 @@ llm-brain-template/
 ├── audit-state.md         ← audit progress template
 ├── .gitignore             ← ignores .DS_Store, Obsidian workspace files
 ├── raw/                   ← drop your source documents here
+│   └── assets/            ← images downloaded by Asset Clipper
 ├── archive/               ← overflow archives (auto-managed by LLM)
 └── wiki/                  ← LLM-generated knowledge base
     └── (subfolders created organically during ingest, based on topic domain)

@@ -157,6 +157,7 @@ The brain is maintained through Claude Code. Open the repo in your editor, launc
 ├── audit-state.md         ← audit progress checkpoint (LLM-maintained)
 ├── archive/               ← overflow archives (LLM-maintained; auto-created)
 ├── raw/                   ← immutable source documents (never edit)
+│   └── assets/            ← images downloaded by Asset Clipper
 └── wiki/                  ← LLM-generated knowledge base
     └── (subfolders created organically during ingest, based on topic domain)
 ```
