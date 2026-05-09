@@ -132,7 +132,7 @@ Targeted check for a single SA entry. Reads the **Source File** and checks wheth
 - Example: `validate SA-014`
 
 ### `audit`
-Batch re-review of raw sources against the wiki using parallel agents. Reads `audit-state.md` to resume from where the last run stopped. When all sources are audited, prompts the user to optionally restart a full pass.
+Batch re-review of raw sources against the wiki. Processes new files first (sequential ingest with advisor), then optionally re-ingests existing files. Reads `audit-state.md` to resume from where the last run stopped.
 - Example: `audit`
 
 ### `init`
@@ -184,40 +184,78 @@ A single source may touch 5–15 wiki pages. That's expected and correct.
 
 When the user says "audit":
 
-**Purpose**: Systematically re-read every raw source and compare it against its wiki pages to find content gaps.
+**Purpose**: Systematically re-read every raw source and compare it against its wiki pages to find content gaps. Uses the same advisor-gated ingest workflow as `ingest` for maximum quality — each file gets full read → plan → advisor → write → commit treatment. New files (never ingested) are processed first; existing files are re-ingested sequentially.
+
+**State tracking**: `audit-state.md` tracks progress across runs so `audit` always resumes from where it left off. A single Pending list covers both new and existing files — the workflow detects which at processing time.
 
 1. **Read `audit-state.md`**. Check the Pending section:
-   - **Pending sources exist** → resume from that list.
-   - **Pending is empty** → all sources audited. Ask: "All N sources are audited. Run a full audit again?" If yes → reset Pending and proceed. If no → stop.
+   - **Pending sources exist** → resume from that list (previous run in progress or interrupted).
+   - **Pending is empty** → all sources have been audited. Ask: "All N sources are audited. Run a full audit again?" If yes → move all Audited entries back to Pending, reset Progress to `0 / N`, and proceed. If no → stop.
 
 2. **Reconcile `raw/` against `audit-state.md`**:
-   - Run `ls raw/` and compare against audit-state entries (excluding `assets/`)
-   - **New files** on disk but not in audit-state → add to Pending automatically; ingest them before auditing
-   - **Stale filename pointers** → fix silently
-   - **Missing files** → mark as `(file removed — skip)`
+   - Run `ls raw/` to get the full list of files on disk (excluding `assets/`)
+   - Compare against the full source list in `audit-state.md`
+   - **New files** (on disk but not in audit-state at all): add them to the Pending list automatically. Do NOT stop to ask the user.
+   - **Stale filename pointers** (file on disk whose name differs from what audit-state lists): fix the entry in audit-state silently and continue.
+   - **Missing files** (in audit-state but not on disk): mark as `(file removed — skip)` and remove from Pending.
+   - Update the `Progress: N / M` count to reflect the corrected total.
 
-3. **Read `index.md`** to get ingested sources and their wiki pages.
+3. **Read `index.md`** to get ingested sources and their corresponding wiki pages.
 
-4. **For new files from step 2**: run the full Ingest workflow before proceeding.
+4. **Classify each Pending file**:
+   - **New** — the filename does not appear in `index.md` as an ingested source (no wiki pages yet).
+   - **Existing** — the filename appears in `index.md` (wiki pages exist; this will be a re-ingest).
 
-5. **Divide Pending sources** into batches of ~10.
+5. **Process NEW files first** (if any), sequentially in batches of ~10:
 
-6. **Launch one Agent per batch** (single parallel call). Each agent:
-   - Reads each raw file and its corresponding wiki pages
-   - Finds gaps (content in raw absent or understated in wiki)
-   - Updates wiki pages directly
-   - Preserves all LLM-added content (warnings, cross-links, synthesis)
-   - Returns a report: source name, gaps found, wiki pages updated, SA entries needed
+   For each new file:
+   a. Read the raw source file.
+   b. Read all existing wiki pages that may be related (from `index.md` or by topic).
+   c. Form a plan: which wiki pages to create or update, what SA entries are needed.
+   d. **Call the advisor** (before writing anything) — the reviewer catches wrong target pages, missing cross-references, and blind spots.
+   e. Execute the plan: write wiki pages, update `index.md`, append to `changelog.md` and `source-actions.md`.
+   f. **SA dedup check**: before adding any SA entry, scan `source-actions.md` for an existing `🔲 Unresolved` entry with the same `**Source File:**` and `**Source Quote:**`. If a match exists → skip the new entry.
+   g. Commit: `ingest: <source title>`
+   h. Move source from Pending → Audited in `audit-state.md` with date and gap count.
+   i. Append to `log.md`: `## [YYYY-MM-DD] audit-ingest | <source title> (N gaps found)`
 
-7. **Collect agent reports**. For each completed source:
-   - Append any SA entries to `source-actions.md`
-   - Move source from Pending → Audited in `audit-state.md` with date and gap count
+   After all new files are processed, report: "N new files ingested."
 
-8. **Append to `log.md`**: `## [YYYY-MM-DD] audit | Sources N–M reviewed (X gaps found, Y remaining)`
+6. **Prompt about EXISTING files**: "N existing sources remain in the audit queue. Re-ingest them now to check for gaps? (Y/N)"
+   - If **N** → stop. Existing files stay in Pending for the next `audit` run.
+   - If **Y** → proceed to step 7.
 
-9. **Commit** after each batch.
+7. **Process EXISTING files** sequentially in batches of ~10:
 
-> ⚠️ Large raw files (300KB+) should be read in chunks — do not attempt to read the entire file in one call if it exceeds ~100KB.
+   For each existing file:
+   a. Read the raw source file.
+   b. Read all existing wiki pages linked to this source (from `sources:` frontmatter or `index.md`).
+   c. Form a plan: what content is in raw but absent or understated in the wiki.
+   d. **Call the advisor** (before writing anything).
+   e. If gaps found: update wiki pages, append to `changelog.md` and `source-actions.md` (with SA dedup check).
+   f. If no gaps: skip CHG entry; note "no gaps" — batch the audit-state update into the next file's commit.
+   g. Commit after each file that had changes: `reingest: <source title>` (batch no-gap files: `reingest: audit pass — <source A>, <source B>, ...`)
+   h. Move source from Pending → Audited in `audit-state.md` with date and gap count.
+
+8. **Report** a summary after each batch: sources reviewed this run, gaps found and fixed (or "no gaps"), SA entries added, sources remaining.
+
+9. **Append to `log.md`** after each batch: `## [YYYY-MM-DD] audit | Sources N–M reviewed (X gaps found, Y remaining)`
+
+**`audit-state.md` format**:
+```markdown
+# Audit State
+
+Last updated: YYYY-MM-DD
+Progress: N / M sources audited
+
+## Audited
+- `filename.md` — YYYY-MM-DD — no gaps / N gaps fixed
+
+## Pending
+- (remaining sources listed here on first run, then removed as audited)
+```
+
+> ⚠️ Large raw files (300KB+) should be read in chunks or via grep for headings — do not attempt to read the entire file in one call if it exceeds ~100KB.
 
 ### Initialize Repo
 
