@@ -221,6 +221,8 @@ When the user says "audit":
 
    After all new files are processed, report: "N new files ingested."
 
+   > 🚨 **MANDATORY NEXT STEP**: After reporting, you MUST proceed to step 6. Do not commit and stop. Do not summarize and end the session. Step 6 is required even when all new files had no gaps.
+
 6. **Prompt about EXISTING files**: "N existing sources remain in the audit queue. Re-ingest them now to check for gaps? (Y/N)"
    - If **N** → stop. Existing files stay in Pending for the next `audit` run.
    - If **Y** → proceed to step 7.
