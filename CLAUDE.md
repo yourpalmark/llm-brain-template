@@ -67,15 +67,14 @@ One-sentence summary of what this page covers.
 The `### Ingested Sources` table in `index.md` must use this exact format:
 
 ```
-| Source File | Wiki Pages | Visibility |
-| ----------- | ---------- | ---------- |
-| [`Filename.md`](raw/URL%20encoded%20filename.md) | • [[Page One]]<br>• [[Page Two]] | internal |
+| Source File | Wiki Pages |
+| ----------- | ---------- |
+| [`Filename.md`](raw/URL%20encoded%20filename.md) | • [[Page One]]<br>• [[Page Two]] |
 ```
 
 **Column rules:**
 - **Source File** — markdown link: display name in backticks, URL path with spaces → `%20`, `(` → `%28`, `)` → `%29`; `&` and `+` stay literal (do NOT encode as `%26`/`%2B`)
 - **Wiki Pages** — bullet list using `• [[WikiLink]]<br>• [[WikiLink]]` format; one page per bullet; plain-text note for stub/no-content sources
-- **Visibility** — `external` or `internal` only; reflects where the source document came from
 
 ---
 
