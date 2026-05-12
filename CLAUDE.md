@@ -139,6 +139,15 @@ Batch re-review of raw sources against the wiki. Processes new files first (sequ
 First-time setup. Run once after cloning — safe to run again (idempotent). Follow the **Initialize Repo** workflow.
 - Example: `init`
 
+### `actions [source filename]`
+Generate a clean action list for a specific source document — all unresolved SA entries for that source, formatted for handoff to the doc owner.
+
+- `[source filename]` is the raw filename (partial match is fine)
+- Output format: one section per SA entry showing SA number, type, source quote, and desired change — suitable for pasting into a Jira ticket, Slack message, or Confluence comment
+- If no filename is provided: group all `🔲 Unresolved` entries by source document and show a summary count per source
+- Example: `actions My Source Document`
+- Example: `actions` (shows all sources with open items and counts)
+
 ### `help`
 List all available commands with a one-line description of each.
 
