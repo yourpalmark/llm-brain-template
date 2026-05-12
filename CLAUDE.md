@@ -112,11 +112,11 @@ These keyword triggers are recognized when a message starts with them.
 Ingest a raw source file into the wiki. Auto-detects whether this is a first-time ingest or a re-ingest:
 - `[filename]` is the name of a file in `raw/`
 - **First-time**: if the filename does not appear in the `index.md` source list → run the **Ingest a Source** workflow
-- **Re-ingest**: if the filename already appears → run the **Re-ingest an Updated Source** workflow. Check `source-actions.md` for SA entries linked to this source and resolve any whose Source Quote is no longer present in the updated file.
+- **Re-ingest**: if the filename already appears → run the **Re-ingest an Updated Source** workflow. Check `source-actions.md` for SA entries linked to this source and resolve any whose Source Quote is no longer present in the updated file. Also re-evaluate whether any `🔲 Unresolved` SA entries for this source are now satisfied by the updated content — mark `✅ Resolved` for any that are.
 - Example: `ingest my-topic-overview`
 
 ### `doctor`
-Run the wiki health check. Follow the **Lint the Wiki** workflow below.
+Run the wiki health check. Follow the **Lint the Wiki** workflow below. Includes checking all `🔲 Unresolved` SA entries against their local raw source files — same as running `validate` on every entry. Mark `✅ Resolved` for any entry whose Source Quote is gone or whose desired change is already present in the source.
 
 ### `todo`
 Show all `🔲 Unresolved` entries from `source-actions.md`. For each, show the SA number, source document, source quote, and desired change.
