@@ -43,7 +43,7 @@ I want to set up an LLM brain for this topic. Please:
    **Your brain is ready. Here's what to do next:**
 
    1. Open this repo as an Obsidian vault (File → Open folder as vault in Obsidian)
-   2. Use Obsidian Web Clipper to save source pages directly into `raw/`
+   2. Use Batch Clipper to clip source pages directly into `raw/`
    3. Run `ingest [filename]` in this AI session for each source to start building the wiki
 
    The new `README.md` has full details under **Setup** and **Getting Data In** if you need a reference.

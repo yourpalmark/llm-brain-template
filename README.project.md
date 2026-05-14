@@ -56,6 +56,8 @@ ingest [filename]
 
 The LLM builds out the wiki incrementally — creating pages, adding cross-references, and tracking source gaps. See [How It Was Built](#how-it-was-built) for tools to capture source documents as markdown files.
 
+> **Getting source documents into `raw/`:** Use [Batch Clipper](https://github.com/yourpalmark/batch-clipper) — a Chrome extension that clips web pages and Confluence spaces directly into your vault as markdown. It handles batching and asset downloads in one step. No separate asset download or link-fixing needed.
+
 ---
 
 ## Using the Brain
@@ -118,8 +120,8 @@ The brain is maintained through Claude Code. Open the repo in your editor, launc
 
 ### Adding a new source
 
-1. Get the source document as a markdown file (see [How It Was Built](#how-it-was-built) for tools)
-2. Drop the `.md` file into `raw/`
+1. Clip the source page with [Batch Clipper](#how-it-was-built) — it saves the markdown and assets directly into `raw/`
+2. Drop the `.md` file into `raw/` (already there if you used Batch Clipper)
 3. Run `ingest [filename]` in your AI session
 4. The LLM creates or updates wiki pages, adds cross-references, flags any source gaps, and commits
 
@@ -157,7 +159,7 @@ The brain is maintained through Claude Code. Open the repo in your editor, launc
 ├── audit-state.md         ← audit progress checkpoint (LLM-maintained)
 ├── archive/               ← overflow archives (LLM-maintained; auto-created)
 ├── raw/                   ← immutable source documents (never edit)
-│   └── assets/            ← images downloaded by Asset Clipper
+│   └── assets/            ← images downloaded by Batch Clipper
 └── wiki/                  ← LLM-generated knowledge base
     └── (subfolders created organically during ingest, based on topic domain)
 ```
@@ -174,17 +176,11 @@ This brain is based on [Andrej Karpathy's LLM wiki pattern](https://gist.github.
 
 **[Obsidian](https://obsidian.md)** — free note-taking application that renders this repo as a browsable, graph-linked wiki. Open the repo root as an Obsidian vault.
 
-**[Obsidian Web Clipper](https://obsidian.md/clipper)** — Chrome/Firefox extension that saves web pages as markdown files directly into your Obsidian vault. Used to capture source pages into `raw/`.
-
-> **Note:** Web Clipper can sometimes have trouble downloading assets (images, diagrams) from authenticated pages — it may capture broken asset links instead. If this happens, two additional tools can help:
-
-**[Asset Clipper](https://github.com/yourpalmark/asset-clipper)** — Chrome extension that downloads assets referenced in clipped pages that Web Clipper couldn't fetch due to authentication. Run this after clipping an authenticated page that contains images or diagrams.
-
-**[Asset Swapper](https://github.com/yourpalmark/asset-swapper)** — Obsidian plugin that replaces broken asset links in clipped markdown files with the locally downloaded assets. Run this after Asset Clipper to make diagrams render correctly in Obsidian.
+**[Batch Clipper](https://github.com/yourpalmark/batch-clipper)** — Chrome extension for clipping web pages and Confluence spaces directly into an Obsidian vault as markdown. Think of it as Obsidian's Web Clipper with built-in batch support and asset handling — it clips pages (or entire page trees) at once, downloads images and diagrams alongside the markdown, and saves everything directly into `raw/`. No separate asset download or link-fixing step needed.
 
 ### Build process
 
-1. Gathered source documents and converted them to markdown in `raw/`
+1. Used Batch Clipper to clip source pages into `raw/` (markdown + assets in one step)
 2. Opened the repo in Claude Code
 3. Ran `ingest` on each source
 4. The LLM built out `wiki/`, `index.md`, `log.md`, `changelog.md`, and `source-actions.md` incrementally
