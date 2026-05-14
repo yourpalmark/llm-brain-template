@@ -1,3 +1,9 @@
 .DS_Store
+
+# Obsidian workspace state (layout is personal, not shared)
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
+
+# Obsidian plugins (installed locally via community plugin browser)
+# community-plugins.json lists which plugins to install
+.obsidian/plugins/

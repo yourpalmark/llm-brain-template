@@ -58,7 +58,17 @@ Drop your source documents into `raw/` as markdown files. See [Getting Data In](
 
 Install [Obsidian](https://obsidian.md) (free) and open the repo folder as a vault. This renders the `[[WikiLink]]` cross-references as a navigable graph.
 
-### 5. Start ingesting
+### 5. Install required Obsidian plugins
+
+Install the following community plugins (Settings → Community plugins → Browse):
+
+| Plugin | Purpose |
+|--------|---------|
+| **[Asset Swapper](https://github.com/yourpalmark/asset-swapper)** | Replaces broken asset links in clipped markdown files with locally downloaded assets. Required to make diagrams and images render correctly. |
+
+After installing, enable the plugin in Settings → Community plugins.
+
+### 6. Start ingesting
 
 In the AI session run `ingest [filename]` for each source. The LLM builds out the wiki incrementally.
 
