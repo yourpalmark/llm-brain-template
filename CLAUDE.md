@@ -183,7 +183,7 @@ When the user says "ingest [filename]":
 
    - **Other linked files** (`.py`, `.sql`, `.json`, code files, etc.): note their presence in the wiki page with a brief description (e.g., "Attached: `analysis.py` - power estimation simulation") but do not attempt to read them unless they are clearly central to understanding the content.
 
-   Assets live in `raw/assets/<Source Title>/` — check that folder after reading the source file.
+   Assets live in an `assets/` subfolder relative to the source file (e.g. `raw/assets/<Source Title>/` for flat layouts, or alongside the source file for hierarchical layouts) — check for that folder after reading the source file.
 
 3. **Discuss** key takeaways with the user — what's new, what's important, what's surprising. Include insights from images and documents read in step 2.
 
@@ -250,6 +250,7 @@ When the user says "audit":
 
    For each new file:
    a. Read the raw source file.
+   a2. **Read associated assets** — scan the source for asset wikilinks and process each (same rules as `ingest` step 2: read images visually, attempt documents, note code files). Assets live in an `assets/` subfolder relative to the source file — check for that folder after reading the source file.
    b. Read all existing wiki pages that may be related (from `index.md` or by topic).
    c. Form a plan: which wiki pages to create or update, what SA entries are needed.
    d. **Call the advisor** (before writing anything) — the reviewer catches wrong target pages, missing cross-references, and blind spots.
@@ -271,6 +272,7 @@ When the user says "audit":
 
    For each existing file:
    a. Read the raw source file.
+   a2. **Read associated assets** — scan the source for asset wikilinks and process each (same rules as `ingest` step 2: read images visually, attempt documents, note code files). Assets live in an `assets/` subfolder relative to the source file — check for that folder after reading the source file.
    b. Read all existing wiki pages linked to this source (from `sources:` frontmatter or `index.md`).
    c. Form a plan: what content is in raw but absent or understated in the wiki.
    d. **Call the advisor** (before writing anything).
