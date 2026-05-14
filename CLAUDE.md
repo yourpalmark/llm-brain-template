@@ -174,8 +174,20 @@ List all available commands with a one-line description of each.
 When the user says "ingest [filename]":
 
 1. **Read** the source file from `raw/`.
-2. **Discuss** key takeaways with the user — what's new, what's important, what's surprising.
-3. **Write a summary page** in the appropriate `wiki/` subfolder. Choose or create a subfolder that fits the content (e.g., `wiki/concepts/`, `wiki/entities/`, `wiki/operations/`, `wiki/synthesis/` — or any name that fits the domain). Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Overview.md` — NOT `wiki/concepts/overview.md`).
+
+2. **Read associated assets** — after reading the source file, scan it for assets and process each:
+
+   - **Images** (`![[assets/<Title>/<file>.png]]` or similar wikilinks): read each image visually using the Read tool. Interpret what it shows — architecture diagrams, flow charts, data models, screenshots, etc. — and incorporate that understanding directly into wiki page content as substantive prose, not as a footnote. An architecture diagram should inform the design section of a wiki page just as much as the text does.
+
+   - **Linked documents** (URLs or wikilinks pointing to `.pdf`, `.xls`, `.xlsx`, `.docx`, `.csv` files in the assets folder): attempt to read them using the Read tool. If readable, treat as supplementary source material for the same ingest and incorporate their content into related wiki pages.
+
+   - **Other linked files** (`.py`, `.sql`, `.json`, code files, etc.): note their presence in the wiki page with a brief description (e.g., "Attached: `analysis.py` - power estimation simulation") but do not attempt to read them unless they are clearly central to understanding the content.
+
+   Assets live in `raw/assets/<Source Title>/` — check that folder after reading the source file.
+
+3. **Discuss** key takeaways with the user — what's new, what's important, what's surprising. Include insights from images and documents read in step 2.
+
+4. **Write a summary page** in the appropriate `wiki/` subfolder. Choose or create a subfolder that fits the content (e.g., `wiki/concepts/`, `wiki/entities/`, `wiki/operations/`, `wiki/synthesis/` — or any name that fits the domain). Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Overview.md` — NOT `wiki/concepts/overview.md`).
 
    **Content types to recognize** (from Karpathy's methodology):
    - **Entity pages** — named things: people, systems, teams, products, services
@@ -186,11 +198,16 @@ When the user says "ingest [filename]":
    - **Synthesis pages** — cross-cutting analysis connecting multiple sources
 
    Use these types to guide what pages to create and where to put them. Subfolder names are yours to define — the above are examples, not requirements.
-4. **Update existing wiki pages** — any entities, concepts, or integrations touched by this source should be updated or created.
-5. **Populate `source-actions.md`** — for each wiki correction or addition, check whether the raw source already contains the corrected content. If not, append an SA entry. Only create an entry if there is a genuine gap.
-6. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.
-7. **Append to `changelog.md`** — add CHG entries under today's date header.
-8. **Append to `log.md`** — one entry: `## [YYYY-MM-DD] ingest | <Source Title>` + 2–3 line summary.
+
+5. **Update existing wiki pages** — any entities, concepts, or integrations touched by this source should be updated or created.
+
+6. **Populate `source-actions.md`** — for each wiki correction or addition, check whether the raw source already contains the corrected content. If not, append an SA entry. Only create an entry if there is a genuine gap.
+
+7. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.
+
+8. **Append to `changelog.md`** — add CHG entries under today's date header.
+
+9. **Append to `log.md`** — one entry: `## [YYYY-MM-DD] ingest | <Source Title>` + 2–3 line summary.
 
 A single source may touch 5–15 wiki pages. That's expected and correct.
 
