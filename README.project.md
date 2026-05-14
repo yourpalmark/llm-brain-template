@@ -176,7 +176,7 @@ This brain is based on [Andrej Karpathy's LLM wiki pattern](https://gist.github.
 
 **[Obsidian](https://obsidian.md)** — free note-taking application that renders this repo as a browsable, graph-linked wiki. Open the repo root as an Obsidian vault.
 
-**[Batch Clipper](https://github.com/yourpalmark/batch-clipper)** — Chrome extension for clipping web pages and Confluence spaces directly into an Obsidian vault as markdown. Think of it as Obsidian's Web Clipper with built-in batch support and asset handling — it clips pages (or entire page trees) at once, downloads images and diagrams alongside the markdown, and saves everything directly into `raw/`. No separate asset download or link-fixing step needed.
+**[Batch Clipper](https://github.com/yourpalmark/batch-clipper)** — Chrome extension for clipping web pages and Confluence spaces directly into an Obsidian vault as markdown. Think of it as Obsidian's Web Clipper with built-in batch support and asset handling — it clips entire page trees at once, downloads images and diagrams alongside the markdown, and saves everything directly into `raw/`. No separate asset download or link-fixing step needed.
 
 ### Build process
 
