@@ -58,17 +58,7 @@ Drop your source documents into `raw/` as markdown files. See [Getting Data In](
 
 Install [Obsidian](https://obsidian.md) (free) and open the repo folder as a vault. This renders the `[[WikiLink]]` cross-references as a navigable graph.
 
-### 5. Install required Obsidian plugins
-
-Install the following community plugins (Settings → Community plugins → Browse):
-
-| Plugin | Purpose |
-|--------|---------|
-| **[Asset Swapper](https://github.com/yourpalmark/asset-swapper)** | Replaces broken asset links in clipped markdown files with locally downloaded assets. Required to make diagrams and images render correctly. |
-
-After installing, enable the plugin in Settings → Community plugins.
-
-### 6. Start ingesting
+### 5. Start ingesting
 
 In the AI session run `ingest [filename]` for each source. The LLM builds out the wiki incrementally.
 
@@ -78,13 +68,7 @@ In the AI session run `ingest [filename]` for each source. The LLM builds out th
 
 Get your source documents into `raw/` as markdown files, then run `ingest`.
 
-**[Obsidian Web Clipper](https://obsidian.md/clipper)** — Chrome/Firefox extension that saves web pages as markdown files directly into your Obsidian vault.
-
-> **Images**: Web Clipper can sometimes have trouble downloading assets from authenticated pages — it may capture broken asset links instead. If this happens, two additional tools can help:
-
-**[Asset Clipper](https://github.com/yourpalmark/asset-clipper)** — Chrome extension that downloads assets referenced in clipped pages that Web Clipper couldn't fetch due to authentication.
-
-**[Asset Swapper](https://github.com/yourpalmark/asset-swapper)** — Obsidian plugin that replaces broken asset links in clipped markdown files with the locally downloaded assets.
+**[Batch Clipper](https://github.com/yourpalmark/batch-clipper)** — Chrome extension for clipping web pages and Confluence spaces directly into an Obsidian vault as markdown. Think of it as Obsidian's Web Clipper with built-in batch support and asset handling — it clips pages (or entire page trees) at once, downloads images and diagrams alongside the markdown, and saves everything directly into `raw/`. No separate asset download or link-fixing step needed.
 
 > **Large assets**: This repo includes a `.gitattributes` that tracks images and PDFs in `raw/assets/` via [Git LFS](https://git-lfs.com) when available. If your remote supports LFS, run `git lfs install` once after cloning. If not, files commit normally as blobs — no breakage either way.
 
@@ -116,9 +100,9 @@ llm-brain-template/
 ├── changelog.md           ← wiki changelog template
 ├── source-actions.md      ← source gap tracker template
 ├── audit-state.md         ← audit progress template
-├── .gitignore             ← ignores .DS_Store, Obsidian workspace files
+├── .gitignore             ← ignores .DS_Store, .obsidian/
 ├── raw/                   ← drop your source documents here
-│   └── assets/            ← images downloaded by Asset Clipper
+│   └── assets/            ← images downloaded by Batch Clipper
 ├── archive/               ← overflow archives (auto-managed by LLM)
 └── wiki/                  ← LLM-generated knowledge base
     └── (subfolders created organically during ingest, based on topic domain)
