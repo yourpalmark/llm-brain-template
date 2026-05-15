@@ -185,6 +185,8 @@ When the user says "ingest [filename]":
 
    Assets live in a single `raw/assets/` folder that mirrors the page hierarchy (e.g. `raw/assets/Parent/Child/<Page Title>/image.png`) — check for that path after reading the source file.
 
+   > 🚨 **ASSET GATE — mandatory before step 3**: Run `find "raw/assets/<Page Title>" -type f 2>/dev/null` (substituting the actual page title). If the directory exists and contains files, read every file before proceeding. Do not skip this even if the source markdown contains no `![[` wikilinks — assets may exist without being referenced. This step is not optional and must not be skipped during bulk batch processing.
+
 3. **Discuss** key takeaways with the user — what's new, what's important, what's surprising. Include insights from images and documents read in step 2.
 
 4. **Write a summary page** in the appropriate `wiki/` subfolder. Choose or create a subfolder that fits the content (e.g., `wiki/concepts/`, `wiki/entities/`, `wiki/operations/`, `wiki/synthesis/` — or any name that fits the domain). Use a display-name filename matching the H1 title (e.g., `wiki/concepts/Overview.md` — NOT `wiki/concepts/overview.md`).
@@ -251,6 +253,9 @@ When the user says "audit":
    For each new file:
    a. Read the raw source file.
    a2. **Read associated assets** — scan the source for asset wikilinks and process each (same rules as `ingest` step 2: read images visually, attempt documents, note code files). Assets live in `raw/assets/[...hierarchy]/<Page Title>/` — check for that path after reading the source file.
+
+   > 🚨 **ASSET GATE — mandatory before step b**: Run `find "raw/assets/<Page Title>" -type f 2>/dev/null`. If the directory exists and contains files, read every file before proceeding. Do not skip this during bulk batch processing — each file in the batch must pass this gate individually.
+
    b. Read all existing wiki pages that may be related (from `index.md` or by topic).
    c. Form a plan: which wiki pages to create or update, what SA entries are needed.
    d. **Call the advisor** (before writing anything) — the reviewer catches wrong target pages, missing cross-references, and blind spots.
@@ -273,6 +278,9 @@ When the user says "audit":
    For each existing file:
    a. Read the raw source file.
    a2. **Read associated assets** — scan the source for asset wikilinks and process each (same rules as `ingest` step 2: read images visually, attempt documents, note code files). Assets live in `raw/assets/[...hierarchy]/<Page Title>/` — check for that path after reading the source file.
+
+   > 🚨 **ASSET GATE — mandatory before step b**: Run `find "raw/assets/<Page Title>" -type f 2>/dev/null`. If the directory exists and contains files, read every file before proceeding. Do not skip this during bulk batch processing — each file in the batch must pass this gate individually.
+
    b. Read all existing wiki pages linked to this source (from `sources:` frontmatter or `index.md`).
    c. Form a plan: what content is in raw but absent or understated in the wiki.
    d. **Call the advisor** (before writing anything).
