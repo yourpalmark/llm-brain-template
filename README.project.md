@@ -48,15 +48,19 @@ claude         # Claude Code
 init
 ```
 
-**If you are building this brain from scratch** — skip `init` and start ingesting. Drop source documents into `raw/` and run `ingest` for each one:
+**If you are building this brain from scratch** — skip `init` and start ingesting:
 
-```
-ingest [filename]
-```
+1. Drop source documents into `raw/` using [Batch Clipper](https://github.com/yourpalmark/batch-clipper) — a Chrome extension that clips web pages directly into your vault as markdown (handles batching and asset downloads in one step)
+2. Run `clip` to register the clipped files into source-state:
+   ```
+   clip
+   ```
+3. Run `ingest` to process the queue:
+   ```
+   ingest
+   ```
 
-The LLM builds out the wiki incrementally — creating pages, adding cross-references, and tracking source gaps. See [How It Was Built](#how-it-was-built) for tools to capture source documents as markdown files.
-
-> **Getting source documents into `raw/`:** Use [Batch Clipper](https://github.com/yourpalmark/batch-clipper) — a Chrome extension that clips web pages and Confluence spaces directly into your vault as markdown. It handles batching and asset downloads in one step. No separate asset download or link-fixing needed.
+The LLM builds out the wiki incrementally — creating pages, adding cross-references, and tracking source gaps.
 
 ---
 
