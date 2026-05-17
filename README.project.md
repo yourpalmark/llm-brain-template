@@ -142,7 +142,8 @@ The brain is maintained through Claude Code. Open the repo in your editor, launc
 | `source-actions.md` | Tracks gaps between the wiki and the source documents — what ideally should be updated upstream. |
 | `changelog.md` | Append-only history of every wiki change. |
 | `log.md` | Append-only log of every operation (ingest, audit, doctor, etc.). |
-| `audit-state.md` | Tracks audit progress so `audit` can resume across sessions. |
+| `clipper-log.md` | Batch Clipper run log — input for `clip` command. |
+| `state/source-state-NNN.md` | Source registry — provenance and wiki attribution for every raw file (LLM-maintained). |
 
 ---
 
@@ -156,10 +157,12 @@ The brain is maintained through Claude Code. Open the repo in your editor, launc
 ├── log.md                 ← append-only activity log (LLM-maintained)
 ├── changelog.md           ← wiki change history (LLM-maintained)
 ├── source-actions.md      ← source gap tracker (LLM-maintained)
-├── audit-state.md         ← audit progress checkpoint (LLM-maintained)
+├── clipper-log.md         ← batch-clipper run log (written by Batch Clipper)
 ├── archive/               ← overflow archives (LLM-maintained; auto-created)
 ├── raw/                   ← immutable source documents (never edit)
 │   └── assets/            ← images downloaded by Batch Clipper
+├── state/                 ← source tracking (LLM-maintained)
+│   └── source-state-001.md  ← paginated source registry (500 rows/file)
 └── wiki/                  ← LLM-generated knowledge base
     └── (subfolders created organically during ingest, based on topic domain)
 ```

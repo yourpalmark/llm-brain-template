@@ -24,9 +24,12 @@ This is the configuration file for the [TOPIC] second brain. It tells you (the L
 ├── log.md                ← append-only activity log (LLM-maintained)
 ├── changelog.md          ← wiki change history (LLM-maintained)
 ├── source-actions.md     ← source update tracker (LLM-maintained)
-├── audit-state.md        ← audit progress checkpoint (LLM-maintained)
+├── clipper-log.md        ← batch-clipper run log (written by Batch Clipper)
+├── state/                ← source tracking (LLM-maintained)
+│   └── source-state-001.md  ← paginated source registry (500 rows/file)
 ├── archive/              ← overflow archives (LLM-maintained; auto-created)
 ├── raw/                  ← immutable source documents (never edit)
+│   └── assets/           ← images/attachments from batch-clipper
 └── wiki/                 ← LLM-generated knowledge base
     └── (subfolders created organically during ingest, based on topic domain)
 ```
@@ -69,12 +72,54 @@ The `### Ingested Sources` table in `index.md` must use this exact format:
 ```
 | Source File | Wiki Pages |
 | ----------- | ---------- |
-| [`Filename.md`](raw/URL%20encoded%20filename.md) | • [[Page One]]<br>• [[Page Two]] |
+| [Filename.md](<raw/path/to/Filename.md>) | • [[Page One]]<br>• [[Page Two]] |
 ```
 
 **Column rules:**
-- **Source File** — markdown link: display name in backticks, URL path with spaces → `%20`, `(` → `%28`, `)` → `%29`; `&` and `+` stay literal (do NOT encode as `%26`/`%2B`)
+- **Source File** — markdown link: display name is the filename only (no path), href is the full `raw/` path in angle brackets — `[Filename.md](<raw/path/to/Filename.md>)`. Never URL-encode spaces or special characters.
 - **Wiki Pages** — bullet list using `• [[WikiLink]]<br>• [[WikiLink]]` format; one page per bullet; plain-text note for stub/no-content sources
+
+### Source State File Format
+
+All source tracking lives in paginated files in `state/`. Each file covers 500 rows: oldest sources in `source-state-001.md`, newest in the last numbered file. `clip` owns columns 1-6 (provenance); `ingest` owns columns 7-10 (wiki attribution).
+
+**Schema** (10 columns):
+```
+| Source File | Source URL | Root | Clipped Date | Source Created | Source Modified | Wiki Pages | Status | Ingested Date | Skipped Reason |
+| ----------- | ---------- | ---- | ------------ | -------------- | --------------- | ---------- | ------ | ------------- | -------------- |
+| [filename.md](<raw/path/filename.md>) | https://... | raw/subfolder | YYYY-MM-DD |  |  | [[Page One]], [[Page Two]] | ingested | YYYY-MM-DD |  |
+```
+
+**Column rules:**
+- **Source File** — `[filename.md](<raw/plain path.md>)` — angle-bracket path, never URL-encode
+- **Source URL** — original URL the file was clipped from; empty if no URL
+- **Root** — the immediate `raw/` subfolder (e.g. `raw/Guides`); use `raw` if file is directly in `raw/`
+- **Clipped Date** — YYYY-MM-DD from the file's `clipped` frontmatter field
+- **Source Created** — from frontmatter `created` field; blank if not captured at clip time
+- **Source Modified** — from frontmatter `modified` field; blank if not captured at clip time
+- **Wiki Pages** — comma-separated `[[WikiLink]]` references; empty until ingested
+- **Status** — `ingested` | `skipped` | `stale`
+- **Ingested Date** — YYYY-MM-DD when file was processed by `ingest`; empty until ingested
+- **Skipped Reason** — plain text reason for skipped files; empty for ingested
+
+**Status lifecycle:**
+- Absent from source-state → add row via `clip`
+- After `ingest`: Status = `ingested` or `skipped`
+- Re-clipped after ingested/skipped → Status = `stale`
+- After re-ingest of stale row → Status = `ingested` or `skipped`
+
+**Pagination rules:**
+- 500 rows per file; oldest in `-001`, newest in last file
+- File header: `# Source State — Part NNN` + `Brain-owned. Updated by \`clip\` (columns 1-6) and \`ingest\` (columns 7-10).` + `Rows X-Y`
+- When a new file would exceed 500 rows, create the next numbered file
+- Filenames: `source-state-001.md`, `source-state-002.md`, etc. (zero-padded to 3 digits)
+- Never merge files; never split mid-row
+
+**When `clip` adds or updates rows:**
+1. Open the last `source-state-NNN.md` file
+2. If file already has a row for this source → update columns 1-6 and set Status = `stale` (if was `ingested` or `skipped`)
+3. If not present → append new row (columns 7-10 blank); if current file is at 500 rows, create next file
+4. Update the row range in the file header
 
 ---
 
@@ -98,6 +143,7 @@ These rules apply to **every** wiki change, regardless of what triggered it:
 > - Did I add a CHG entry to `changelog.md` for every wiki file I touched? (one CHG per file per session of changes)
 > - Did I evaluate whether any change needs an SA entry in `source-actions.md`?
 > - Did I update `log.md` if this was an ingest, reingest, audit, or doctor operation?
+> - Did I update `state/source-state-NNN.md` columns 7-10 for every file I ingested?
 > - If I renamed a wiki page or reorganized `index.md` sections, did I update `README.md`?
 >
 > **Do not commit without completing this checklist.** The user must never have to ask for these — they are part of every change, not an afterthought.
@@ -122,15 +168,25 @@ These files are the audit trail of the wiki. Skipping any of them means the wiki
 
 These keyword triggers are recognized when a message starts with them.
 
-### `ingest [filename]`
-Ingest a raw source file into the wiki. Auto-detects whether this is a first-time ingest or a re-ingest:
-- `[filename]` is the name of a file in `raw/`
-- **First-time**: if the filename does not appear in the `index.md` source list → run the **Ingest a Source** workflow
-- **Re-ingest**: if the filename already appears → run the **Re-ingest an Updated Source** workflow. Check `source-actions.md` for SA entries linked to this source and resolve any whose Source Quote is no longer present in the updated file. Also re-evaluate whether any `🔲 Unresolved` SA entries for this source are now satisfied by the updated content — mark `✅ Resolved` for any that are.
-- Example: `ingest my-topic-overview`
+### `clip`
+Register newly clipped source files into `state/source-state-NNN.md`. Run after batch-clipper adds files to `raw/`.
+- Reads `clipper-log.md` to find the latest batch of clipped files.
+- For each file in the batch: reads frontmatter (`source`, `created`, `modified`, `clipped`), derives `Root` from file path.
+- **New file** (not in any source-state row) → append row with columns 1-6 filled, columns 7-10 blank.
+- **Existing file** with Status = `ingested` or `skipped` → update columns 1-6, set Status = `stale`.
+- **Existing file** with Status = `stale` → update columns 1-6 only (already queued).
+- Commit: `clip: register N sources`
+- Example: `clip`
+
+### `ingest [N=10]` / `ingest [filename]`
+Process source files from the ingest queue and write wiki pages. Two forms only:
+- `ingest [N=10]` — process the next N files from the queue (default 10 if N omitted). Queue = rows in `state/source-state-NNN.md` with blank Status OR Status = `stale`.
+- `ingest [filename]` — process a specific file by name. If the file has no source-state row, treat as new. If Status = `stale`, run the **Re-ingest an Updated Source** workflow.
+- For each file processed: run the **Ingest a Source** workflow, update the source-state row (columns 7-10), commit.
+- Example: `ingest` (next 10) | `ingest 5` | `ingest my-topic-overview`
 
 ### `doctor`
-Run the wiki health check. Follow the **Lint the Wiki** workflow below. Includes checking all `🔲 Unresolved` SA entries against their local raw source files — same as running `validate` on every entry. Mark `✅ Resolved` for any entry whose Source Quote is gone or whose desired change is already present in the source.
+Wiki structural health check. **Does not read raw sources.** Reports: broken WikiLinks, orphan pages, unresolved SA backlog, source-state integrity issues (duplicate rows, invalid Status values, missing columns), README drift. Follow the **Lint the Wiki** workflow below.
 
 ### `todo`
 Show all `🔲 Unresolved` entries from `source-actions.md`. For each, show the SA number, source document, source quote, and desired change.
@@ -146,7 +202,7 @@ Targeted check for a single SA entry. Reads the **Source File** and checks wheth
 - Example: `validate SA-014`
 
 ### `audit`
-Batch re-review of raw sources against the wiki. Processes new files first (sequential ingest with advisor), then optionally re-ingests existing files. Reads `audit-state.md` to resume from where the last run stopped.
+Source-vs-wiki coverage check. **Reads raw sources.** Flags: files whose frontmatter `modified` date is newer than their `Ingested Date` (stale), files present in `clipper-log.md` but absent from `state/source-state-NNN.md` (suggest `clip`), and ingested files where wiki coverage appears thin relative to source content (suggest re-ingest). Uses `state/source-state-NNN.md` to detect new vs. existing files and resume across sessions.
 - Example: `audit`
 
 ### `init`
@@ -207,7 +263,9 @@ When the user says "ingest [filename]":
 
 7. **Update `index.md`** — add the new summary page and any new/updated pages to the catalog.
 
-8. **Append to `changelog.md`** — add CHG entries under today's date header.
+7b. **Update `state/source-state-NNN.md`** — find the existing row for this file (added by `clip`) and update columns 7-10: set Status = `ingested`, fill Wiki Pages with `[[PageName]]` links for every wiki page this source contributed to, set Ingested Date = today. If no row exists (file was not clipped via batch-clipper), append a new row with all columns filled.
+
+8. **Append to `changelog.md`** — add CHG entries under today's date header. Follow the CHG Entry Format: `**Source File:**` with angle-bracket link, `**Change Type:**`, `**What Changed:**` bullets.
 
 9. **Append to `log.md`** — one entry: `## [YYYY-MM-DD] ingest | <Source Title>` + 2–3 line summary.
 
@@ -215,12 +273,36 @@ A single source may touch 5–15 wiki pages. That's expected and correct.
 
 ### Re-ingest an Updated Source
 
-1. The user replaces the raw file in `raw/` with the updated version (same filename).
-2. Check `source-actions.md` for SA entries linked to this source. For each `🔲 Unresolved` entry, compare the Source Quote against the updated file. If gone or already applied → mark `✅ Resolved [YYYY-MM-DD]`.
-3. Read the current wiki page to understand LLM-added content (warnings, cross-links, synthesis) — preserve it.
-4. Read the updated raw file and add any net-new content to the wiki.
-5. Update `index.md` if new wiki pages are created.
+Used when `ingest [filename]` is run on a file whose Status = `stale` in source-state.
+
+1. Check `source-actions.md` for SA entries linked to this source. For each `🔲 Unresolved` entry, compare the Source Quote against the updated file. If gone or already applied → mark `✅ Resolved [YYYY-MM-DD]`.
+2. Read the current wiki page to understand LLM-added content (warnings, cross-links, synthesis) — preserve it.
+3. Read the updated raw file and add any net-new content to the wiki.
+4. Update `index.md` if new wiki pages are created.
+5. **Update `state/source-state-NNN.md`** — update the existing row: set Status = `ingested` (or `skipped`), update Ingested Date, update Wiki Pages if new pages were added.
 6. Append to `log.md` with entry type `reingest`.
+
+### Clip Sources
+
+When the user says "clip":
+
+**Purpose**: Register newly clipped files from batch-clipper into `state/source-state-NNN.md`. This is always the first step after a batch-clipper run — before any ingestion.
+
+1. **Read `clipper-log.md`** — find the most recent batch entry. Extract the list of filenames clipped in that run.
+
+2. **For each file in the batch**:
+   a. Read the file's frontmatter from `raw/` — extract `source` (URL), `created`, `modified`, `clipped`.
+   b. Derive `Root` from the file path: the immediate subfolder under `raw/` (e.g. `raw/Guides` for `raw/Guides/My Page.md`; `raw` if directly in `raw/`).
+   c. Search all `state/source-state-NNN.md` files for an existing row matching this filename.
+   d. **Not found** → append new row: fill columns 1-6, leave columns 7-10 blank.
+   e. **Found, Status = `ingested` or `skipped`** → update columns 1-6, set Status = `stale`.
+   f. **Found, Status = `stale`** → update columns 1-6 only (already queued for re-ingest).
+
+3. **Update row ranges** in any source-state file headers that changed.
+
+4. **Commit**: `clip: register N sources` (substitute actual count).
+
+5. **Report**: "N new sources registered, M marked stale. Run `ingest` to process the queue."
 
 ### Audit Raw Sources
 
@@ -228,27 +310,16 @@ When the user says "audit":
 
 **Purpose**: Systematically re-read every raw source and compare it against its wiki pages to find content gaps. Uses the same advisor-gated ingest workflow as `ingest` for maximum quality — each file gets full read → plan → advisor → write → commit treatment. New files (never ingested) are processed first; existing files are re-ingested sequentially.
 
-**State tracking**: `audit-state.md` tracks progress across runs so `audit` always resumes from where it left off. A single Pending list covers both new and existing files — the workflow detects which at processing time.
+**Resume state**: `state/source-state-NNN.md` is the source of truth. New files = not present in any source-state row. Already-ingested files are re-audited only on opt-in (step 3). No separate audit-state file is needed.
 
-1. **Read `audit-state.md`**. Check the Pending section:
-   - **Pending sources exist** → resume from that list (previous run in progress or interrupted).
-   - **Pending is empty** → all sources have been audited. Ask: "All N sources are audited. Run a full audit again?" If yes → move all Audited entries back to Pending, reset Progress to `0 / N`, and proceed. If no → stop.
+1. **Discover new files**:
+   - Run `find raw/ -name "*.md" -not -path "raw/assets/*"` to get all raw files on disk.
+   - For each, check whether its filename appears in any `state/source-state-NNN.md` row (Status = `ingested` or `skipped`).
+   - **New files** (not in any source-state row) → queue for processing.
+   - **Already-ingested files** → skip for now (offered in step 3).
+   - Report: "N new files found, M already ingested."
 
-2. **Reconcile `raw/` against `audit-state.md`**:
-   - Run `ls raw/` to get the full list of files on disk (excluding `assets/`)
-   - Compare against the full source list in `audit-state.md`
-   - **New files** (on disk but not in audit-state at all): add them to the Pending list automatically. Do NOT stop to ask the user.
-   - **Stale filename pointers** (file on disk whose name differs from what audit-state lists): fix the entry in audit-state silently and continue.
-   - **Missing files** (in audit-state but not on disk): mark as `(file removed — skip)` and remove from Pending.
-   - Update the `Progress: N / M` count to reflect the corrected total.
-
-3. **Read `index.md`** to get ingested sources and their corresponding wiki pages.
-
-4. **Classify each Pending file**:
-   - **New** — the filename does not appear in `index.md` as an ingested source (no wiki pages yet).
-   - **Existing** — the filename appears in `index.md` (wiki pages exist; this will be a re-ingest).
-
-5. **Process NEW files first** (if any), sequentially in batches of ~10:
+2. **Process NEW files first** (if any), sequentially in batches of ~10:
 
    For each new file:
    a. Read the raw source file.
@@ -261,19 +332,19 @@ When the user says "audit":
    d. **Call the advisor** (before writing anything) — the reviewer catches wrong target pages, missing cross-references, and blind spots.
    e. Execute the plan: write wiki pages, update `index.md`, append to `changelog.md` and `source-actions.md`.
    f. **SA dedup check**: before adding any SA entry, scan `source-actions.md` for an existing `🔲 Unresolved` entry with the same `**Source File:**` and `**Source Quote:**`. If a match exists → skip the new entry.
-   g. Commit: `ingest: <source title>`
-   h. Move source from Pending → Audited in `audit-state.md` with date and gap count.
+   g. **Update `state/source-state-NNN.md`** — append a row for this file (Status = `ingested`, Wiki Pages filled).
+   h. Commit: `ingest: <source title>`
    i. Append to `log.md`: `## [YYYY-MM-DD] audit-ingest | <source title> (N gaps found)`
 
    After all new files are processed, report: "N new files ingested."
 
-   > 🚨 **MANDATORY NEXT STEP**: After reporting, you MUST proceed to step 6. Do not commit and stop. Do not summarize and end the session. Step 6 is required even when all new files had no gaps.
+   > 🚨 **MANDATORY NEXT STEP**: After reporting, you MUST proceed to step 3. Do not commit and stop. Do not summarize and end the session. Step 3 is required even when all new files had no gaps.
 
-6. **Prompt about EXISTING files**: "N existing sources remain in the audit queue. Re-ingest them now to check for gaps? (Y/N)"
-   - If **N** → stop. Existing files stay in Pending for the next `audit` run.
-   - If **Y** → proceed to step 7.
+3. **Prompt about EXISTING files**: "M existing sources could be re-audited for gaps. Re-ingest them now? (Y/N)"
+   - If **N** → stop.
+   - If **Y** → proceed to step 4.
 
-7. **Process EXISTING files** sequentially in batches of ~10:
+4. **Process EXISTING files** sequentially in batches of ~10:
 
    For each existing file:
    a. Read the raw source file.
@@ -284,28 +355,13 @@ When the user says "audit":
    b. Read all existing wiki pages linked to this source (from `sources:` frontmatter or `index.md`).
    c. Form a plan: what content is in raw but absent or understated in the wiki.
    d. **Call the advisor** (before writing anything).
-   e. If gaps found: update wiki pages, append to `changelog.md` and `source-actions.md` (with SA dedup check).
-   f. If no gaps: skip CHG entry; note "no gaps" — batch the audit-state update into the next file's commit.
+   e. If gaps found: update wiki pages, append to `changelog.md` and `source-actions.md` (with SA dedup check). Update the file's source-state row Wiki Pages column if new pages were added.
+   f. If no gaps: note "no gaps" — batch the commit with the next file.
    g. Commit after each file that had changes: `reingest: <source title>` (batch no-gap files: `reingest: audit pass — <source A>, <source B>, ...`)
-   h. Move source from Pending → Audited in `audit-state.md` with date and gap count.
 
-8. **Report** a summary after each batch: sources reviewed this run, gaps found and fixed (or "no gaps"), SA entries added, sources remaining.
+5. **Report** a summary after each batch: sources reviewed this run, gaps found and fixed (or "no gaps"), SA entries added, sources remaining.
 
-9. **Append to `log.md`** after each batch: `## [YYYY-MM-DD] audit | Sources N–M reviewed (X gaps found, Y remaining)`
-
-**`audit-state.md` format**:
-```markdown
-# Audit State
-
-Last updated: YYYY-MM-DD
-Progress: N / M sources audited
-
-## Audited
-- `filename.md` — YYYY-MM-DD — no gaps / N gaps fixed
-
-## Pending
-- (remaining sources listed here on first run, then removed as audited)
-```
+6. **Append to `log.md`** after each batch: `## [YYYY-MM-DD] audit | Sources N–M reviewed (X gaps found, Y remaining)`
 
 > ⚠️ Large raw files (300KB+) should be read in chunks or via grep for headings — do not attempt to read the entire file in one call if it exceeds ~100KB.
 
@@ -354,11 +410,18 @@ When the user says "doctor":
    - Missing cross-references between related pages
    - Data gaps that could be filled with existing raw sources not yet ingested, or via web search
 
-4. Check all `🔲 Unresolved` entries in `source-actions.md` against their local raw source files — validate whether the Source Quote still exists verbatim. Mark `✅ Resolved [YYYY-MM-DD]` for any entries whose quote is gone or whose desired change is already present.
+4. **Check source-state integrity** — scan all `state/source-state-NNN.md` files for:
+   - Duplicate rows (same filename in multiple rows)
+   - Invalid Status values (anything other than `ingested`, `skipped`, `stale`, or blank)
+   - Rows missing required columns
+   - Pagination invariants: row count per file ≤ 500, row ranges in headers match actual content
+   - Report any issues found.
 
-5. Report all findings as a list with suggested actions.
+5. Check all `🔲 Unresolved` entries in `source-actions.md` — validate whether the Source Quote still exists verbatim in the source file. Mark `✅ Resolved [YYYY-MM-DD]` for any entries whose quote is gone or whose desired change is already present.
 
-6. Suggest new questions or sources to investigate.
+6. Report all findings as a list with suggested actions.
+
+7. Suggest new questions or sources to investigate.
 
 ---
 
@@ -368,9 +431,11 @@ When the user says "doctor":
 
 **log.md** — append-only. Each entry header: `## [YYYY-MM-DD] operation | Description`. Operation types: `ingest`, `reingest`, `query`, `audit`, `doctor`. New entries go at the **top** (reverse chronological). Parseable with: `grep "^## \[" log.md | head -5`
 
-**changelog.md** — wiki change history. CHG entries grouped under date headers (`## YYYY-MM-DD`), reverse chronological. CHG numbers are sequential.
+**changelog.md** — wiki change history. CHG entries grouped under date headers (`## YYYY-MM-DD`), reverse chronological. CHG numbers are sequential. Every `###` heading in `changelog.md` must be a `CHG-NNN` entry — no other content should use `###`.
 
 **source-actions.md** — source update tracker. SA entries (SA-NNN) each contain a Source Quote anchored to the raw file at ingest time, and a Desired Change describing what the source should ideally say. SA entries track every gap regardless of whether you own the source — what you do with them is up to you. New entries go at the **top** (reverse chronological).
+
+**state/source-state-NNN.md** — paginated source registry. One row per raw file. `clip` populates provenance columns (1-6); `ingest` populates wiki attribution columns (7-10). See Source State File Format above.
 
 ### Automatic Archiving (file length management)
 
@@ -399,21 +464,26 @@ When the user says "doctor":
 ```
 ### CHG-NNN — `wiki/path/to/page.md` — Short Title
 
-**Source:** `Raw Source Filename`
-**Change Type:** Brief label (e.g. Correction, New Page, Synthesis)
+**Source File:** [filename.md](<raw/path/to/filename.md>)
+**Change Type:** New Page | Content Correction | New Content Added | Synthesis | Stub | SA Stamps
 
 **What Changed:**
 - Bullet list of wiki-local changes only
 ```
+
+**Rules:**
+- `**Source File:**` — display name is the filename only, href is the full `raw/` path in angle brackets. Multiple sources: comma-separated links on the same line.
+- For SA Stamps entries (recording files evaluated as not wiki-worthy): omit `**Source File:**`; use `**Change Type:** SA Stamps` and list dispositions in bullets.
+- For entries that touch meta-files only (`CLAUDE.md`, `index.md`, etc.): use the file path as the title; `**Source File:**` is not needed.
+- Every `###` heading in `changelog.md` must be a `CHG-NNN` entry. No other content (e.g. batch summaries, verification notes) should use `###`.
 
 ### SA Entry Format (source-actions.md)
 
 ```
 ### SA-NNN — `Source Document Name` — Short Title
 
-**Type:** `content-correction` | `content-addition` | `terminology` | `structural`
-**Source File:** `raw/filename.md` | N/A
-**Ingested:** YYYY-MM-DD
+**Type:** `content-correction` | `content-addition` | `terminology` | `structural` | `outdated` | `archive` | `conflict`
+**Source File:** [filename.md](<raw/path/to/filename.md>) | N/A
 
 **Source Quote:**
 > Exact text from the source that needs changing.
@@ -426,6 +496,28 @@ What the source document should ideally say. Be specific.
 **Status:** [✅ Resolved YYYY-MM-DD | 🔲 Unresolved]
 ```
 
+### SA Type Reference
+
+| Type | When to Use |
+|------|-------------|
+| `content-correction` | Source has wrong or outdated information; wiki has the correct version |
+| `content-addition` | Source is missing content that should be there |
+| `terminology` | Source uses wrong or outdated terminology |
+| `structural` | Organizational issue — wrong location, wrong doc, incomplete structure |
+| `outdated` | Source is stale or superseded by newer sources or wiki synthesis |
+| `archive` | Source is no longer relevant and should be removed from `raw/` entirely |
+| `conflict` | Two sources directly contradict each other; human resolution needed |
+
+### Source Archive Process
+
+When a raw source should be retired (flagged via `archive` SA entry):
+
+1. Create SA entry of type `archive` documenting why it should be retired.
+2. **Do not move or delete `raw/` files yourself** — the user decides when to act on SA entries.
+3. When the user resolves the SA entry: move the file from `raw/` to `raw/archive/` (create the directory if needed).
+4. Update the relevant `state/source-state-NNN.md` row: set Status = `skipped`, set Skipped Reason = `archived`.
+5. Update any wiki pages that cited the archived source — remove the source from their `sources:` frontmatter if other sources cover the same content.
+6. Commit: `chore: archive source — <filename>`
 
 ---
 
@@ -440,7 +532,9 @@ What the source document should ideally say. Be specific.
 <optional body — bullet list of what changed>
 ```
 
-**Types:** `ingest:` | `reingest:` | `wiki:` | `schema:` | `sa:` | `chore:`
+**Types:** `clip:` | `ingest:` | `reingest:` | `wiki:` | `schema:` | `sa:` | `chore:`
+
+- `clip:` — source registration after a batch-clipper run (e.g. `clip: register 12 sources`); no visibility suffix
 
 ---
 

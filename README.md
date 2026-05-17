@@ -84,7 +84,8 @@ Get your source documents into `raw/` as markdown files, then run `ingest`.
 | `source-actions.md` | Tracks gaps between the wiki and source documents (LLM-maintained). |
 | `changelog.md` | Append-only wiki change history (LLM-maintained). |
 | `log.md` | Append-only activity log (LLM-maintained). |
-| `audit-state.md` | Audit progress checkpoint (LLM-maintained). |
+| `clipper-log.md` | Batch Clipper run log — input for `clip` command. |
+| `state/source-state-NNN.md` | Paginated source registry — provenance + wiki attribution (LLM-maintained). |
 
 ---
 
@@ -99,10 +100,12 @@ llm-brain-template/
 ├── log.md                 ← activity log template
 ├── changelog.md           ← wiki changelog template
 ├── source-actions.md      ← source gap tracker template
-├── audit-state.md         ← audit progress template
+├── clipper-log.md         ← batch-clipper run log (written by Batch Clipper)
 ├── .gitignore             ← ignores .DS_Store, .obsidian/
 ├── raw/                   ← drop your source documents here
 │   └── assets/            ← images downloaded by Batch Clipper
+├── state/                 ← source tracking (auto-managed by LLM)
+│   └── source-state-001.md  ← paginated source registry (500 rows/file)
 ├── archive/               ← overflow archives (auto-managed by LLM)
 └── wiki/                  ← LLM-generated knowledge base
     └── (subfolders created organically during ingest, based on topic domain)
@@ -114,7 +117,9 @@ llm-brain-template/
 
 | Command | What it does |
 |---------|-------------|
-| `ingest [filename]` | Ingest a source file; auto-detects first-time vs. re-ingest |
+| `clip` | Register newly clipped files into `state/source-state-NNN.md` |
+| `ingest [N=10]` | Batch-ingest next N files from the queue (default: 10) |
+| `ingest [filename]` | Ingest a single source file; auto-detects first-time vs. re-ingest |
 | `doctor` | Full wiki health check: broken links, README sync, orphan pages, stale source actions |
 | `audit` | Batch re-review of all sources against wiki pages, resuming from last run |
 | `todo` | Show all unresolved source action items |
