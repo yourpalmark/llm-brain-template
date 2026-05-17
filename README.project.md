@@ -111,19 +111,20 @@ The brain is maintained through Claude Code. Open the repo in your editor, launc
 |---------|-------------|
 | `help` | List all available commands |
 | `init` | First-time setup verification. Idempotent: safe to run again. |
-| `ingest [filename]` | Ingest a raw source file into the wiki. Auto-detects first-time vs. re-ingest. |
-| `doctor` | Run a full wiki health check: broken links, orphan pages, stale source actions, README sync. |
+| `clip` | Register newly clipped files from Batch Clipper into source-state. Run after each Batch Clipper run. |
+| `ingest [N=10]` / `ingest [filename]` | Process files from the ingest queue and write wiki pages. |
+| `doctor` | Wiki structural health check (no raw source reads): broken links, orphan pages, source-state integrity, SA backlog, README sync. |
 | `todo` | Show all unresolved source action items (`source-actions.md`) |
 | `resolve SA-NNN` | Mark a source action item as resolved. Example: `resolve SA-009` |
 | `validate SA-NNN` | Targeted check for a single action item — reads the source file and verifies whether the change is still needed |
-| `audit` | Batch re-review of all raw sources against their wiki pages, resuming from where the last run stopped |
+| `audit` | Source-vs-wiki coverage check (reads raw sources): flags stale ingestions, missing clips, and thin coverage. Resumes from last run via `state/source-state-NNN.md`. |
+| `actions [source filename]` | List all unresolved SA entries for a source, formatted for handoff. Omit filename to see counts per source. |
 
 ### Adding a new source
 
 1. Clip the source page with [Batch Clipper](#how-it-was-built) — it saves the markdown and assets directly into `raw/`
-2. Drop the `.md` file into `raw/` (already there if you used Batch Clipper)
-3. Run `ingest [filename]` in your AI session
-4. The LLM creates or updates wiki pages, adds cross-references, flags any source gaps, and commits
+2. Run `clip` in your AI session — registers the clipped files into source-state
+3. Run `ingest` to process the queue — the LLM creates or updates wiki pages, adds cross-references, flags source gaps, and commits
 
 ### Updating an existing source
 
@@ -143,7 +144,7 @@ The brain is maintained through Claude Code. Open the repo in your editor, launc
 | `changelog.md` | Append-only history of every wiki change. |
 | `log.md` | Append-only log of every operation (ingest, audit, doctor, etc.). |
 | `clipper-log.md` | Batch Clipper run log — input for `clip` command. |
-| `state/source-state-NNN.md` | Source registry — provenance and wiki attribution for every raw file (LLM-maintained). |
+| `state/source-state-NNN.md` | Paginated source tracking — status, wiki page attribution, and clip provenance for every raw file (LLM-maintained). |
 
 ---
 
@@ -185,6 +186,6 @@ This brain is based on [Andrej Karpathy's LLM wiki pattern](https://gist.github.
 
 1. Used Batch Clipper to clip source pages into `raw/` (markdown + assets in one step)
 2. Opened the repo in Claude Code
-3. Ran `ingest` on each source
-4. The LLM built out `wiki/`, `index.md`, `log.md`, `changelog.md`, and `source-actions.md` incrementally
+3. Ran `clip` to register clipped sources into source-state
+4. Ran `ingest` to process the queue — the LLM built out `wiki/`, `index.md`, `log.md`, `changelog.md`, and `source-actions.md` incrementally
 5. Ran `audit` and `doctor` passes to fill gaps and fix issues

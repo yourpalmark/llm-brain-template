@@ -120,11 +120,12 @@ llm-brain-template/
 | `clip` | Register newly clipped files into `state/source-state-NNN.md` |
 | `ingest [N=10]` | Batch-ingest next N files from the queue (default: 10) |
 | `ingest [filename]` | Ingest a single source file; auto-detects first-time vs. re-ingest |
-| `doctor` | Full wiki health check: broken links, README sync, orphan pages, stale source actions |
-| `audit` | Batch re-review of all sources against wiki pages, resuming from last run |
+| `doctor` | Wiki structural health check (no raw source reads): broken links, orphan pages, source-state integrity, SA backlog, README sync |
+| `audit` | Source-vs-wiki coverage check (reads raw sources): flags stale ingestions, missing clips, and thin coverage. Resumes via `state/source-state-NNN.md` |
 | `todo` | Show all unresolved source action items |
 | `resolve SA-NNN` | Mark a source action item as resolved |
 | `validate SA-NNN` | Targeted check for a single action item |
+| `actions [source filename]` | List all unresolved SA entries for a source, formatted for handoff. Omit filename to see counts per source. |
 | `init` | First-time setup verification |
 | `help` | List all commands |
 
@@ -133,8 +134,8 @@ llm-brain-template/
 ## How It Works
 
 1. Drop source documents into `raw/`
-2. Run `ingest [filename]` in an AI session
-3. The LLM synthesizes wiki pages, adds cross-references, tracks source gaps
+2. Run `clip` to register sources into `state/source-state-NNN.md`
+3. Run `ingest` — the LLM synthesizes wiki pages, adds cross-references, tracks source gaps
 4. Query the wiki with natural language or browse it in Obsidian
 
 The LLM reads `CLAUDE.md` at the start of every session — it defines the schema, commands, and all workflows. Raw sources are never modified.
